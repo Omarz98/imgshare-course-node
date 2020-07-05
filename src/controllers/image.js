@@ -9,8 +9,11 @@ const { json } = require('express');
 
 const ctrl = {}
 
-ctrl.index = (req, res) =>{
-
+ctrl.index = async (req, res) =>{
+    const image = await Image.findOne({filename: {$regex: req.params.image_id}});
+    console.log(image);
+    //console.log('params: ', req.params.image_id);
+    res.render('image', {image});
 };
 
 ctrl.create = (req, res) =>{
@@ -35,8 +38,8 @@ ctrl.create = (req, res) =>{
                 });
                 const imageSaved = await newImg.save();
                 //console.log(newImg);  
-                //res.redirect('/images/');
-                res.send('Works!')
+                res.redirect('/images/' + imgUrl);
+                //res.send('Works!')
             }else{
                 await fs.unlink(imageTemPath);
                 res.status(500).json({error: 'Only Images are allowed'});
