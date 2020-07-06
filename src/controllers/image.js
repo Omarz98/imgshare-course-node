@@ -12,9 +12,11 @@ const ctrl = {}
 
 ctrl.index = async (req, res) =>{
     const image = await Image.findOne({filename: {$regex: req.params.image_id}});
-    console.log(image);
+    //console.log(image);
+    const comments = await Comment.find({image_id: image._id});
+    res.render('image',{image,comments});
     //console.log('params: ', req.params.image_id);
-    res.render('image', {image});
+    //res.render('image', {image});
 };
 
 ctrl.create = (req, res) =>{
