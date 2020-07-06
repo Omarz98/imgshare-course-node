@@ -11,12 +11,22 @@ const { json } = require('express');
 const ctrl = {}
 
 ctrl.index = async (req, res) =>{
+    const viewModel = { image: {} , comments: {}};
     const image = await Image.findOne({filename: {$regex: req.params.image_id}});
     //console.log(image);
-    const comments = await Comment.find({image_id: image._id});
-    res.render('image',{image,comments});
-    //console.log('params: ', req.params.image_id);
-    //res.render('image', {image});
+    if (image) {
+        image.views = image.views + 1;
+        viewModel.image = image;
+        await image.save();
+        const comments = await Comment.find({image_id: image._id});
+        viewModel.comments = comments;
+        res.render('image',viewModel);
+        //console.log('params: ', req.params.image_id);
+        //res.render('image', {image});
+    } else{
+        res.redirect('/');
+    }
+    
 };
 
 ctrl.create = (req, res) =>{
@@ -55,8 +65,15 @@ ctrl.create = (req, res) =>{
     saveImage();
 };
 
-ctrl.like = (req, res) => {
-
+ctrl.like = async (req, res) => {
+    const image = await Image.findOne({filename: {$regex: req.params.image_id}});
+    if (image) {
+        image.likes = image.likes + 1;
+        await image.save();
+        res.json({likes: image.likes});
+    }else{
+        res.status(500).json({error: 'Internal Error'});
+    }
 };
 
 ctrl.comment = async (req, res) => {
@@ -72,6 +89,8 @@ ctrl.comment = async (req, res) => {
         //console.log(newComment);
         await newComment.save();
         res.redirect('/images/'+ image.uniqueId);
+    }else{
+        res.redirect('/');
     }
     
 };
