@@ -4,6 +4,8 @@ const fs = require('fs-extra');
 const md5 = require('md5');
 
 const { Image,Comment} = require('../models');
+const sidebar = require('../helpers/sidebar');
+
 const { ETXTBSY } = require('constants');
 const { runInNewContext } = require('vm');
 const { json } = require('express');
@@ -11,7 +13,7 @@ const { json } = require('express');
 const ctrl = {}
 
 ctrl.index = async (req, res) =>{
-    const viewModel = { image: {} , comments: {}};
+    let viewModel = { image: {} , comments: {}};
     const image = await Image.findOne({filename: {$regex: req.params.image_id}});
     //console.log(image);
     if (image) {
@@ -20,6 +22,7 @@ ctrl.index = async (req, res) =>{
         await image.save();
         const comments = await Comment.find({image_id: image._id});
         viewModel.comments = comments;
+        viewModel = await sidebar(viewModel);
         res.render('image',viewModel);
         //console.log('params: ', req.params.image_id);
         //res.render('image', {image});
